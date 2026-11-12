@@ -62,6 +62,21 @@ class ResearchRuntime:
             if key not in ADAPTERS:
                 raise ValueError('Unknown checkpoint')
             directory = assets / adapter['path']
+            for p in directory.rglob('*'):
+                if p.is_file() and str(p.relative_to(assets)) not in manifest['asset_inventory']:
+                    raise ValueError('All adapter/tokenizer files must be inventoried')
+            receipt_path = assets / adapter['receipt_path']
+            dataset_path = assets / adapter['dataset_manifest_path']
+            for p in (receipt_path, dataset_path):
+                if str(p.relative_to(assets)) not in manifest['asset_inventory']:
+                    raise ValueError('Original receipts must be inventoried')
+            receipt = json.loads(receipt_path.read_text())
+            dataset = json.loads(dataset_path.read_text())
+            expected_manifest = {'D1000': 'd412f592d023c5be246c741cf0d04361eb8096f2ec5d8f0ce265603eb72acb32',
+                                 'D1500': '8dec2a5aae862950306c331a41c98b900c20cb4413517d701be0a081827ec7b1'}[key]
+            if (receipt.get('passed') is not True or receipt.get('adapter_sha256') != ADAPTERS[key]['sha256']
+                or sha(dataset_path) != expected_manifest or len(dataset['train_ids']) != ADAPTERS[key]['training_rows']):
+                raise ValueError('Original adapter/training receipt differs')
             for filename in ('adapter_model.safetensors', 'adapter_config.json', 'tokenizer_config.json'):
                 if str(Path(adapter['path'])/filename) not in manifest['asset_inventory']:
                     raise ValueError('Adapter and tokenizer files must be inventoried')
@@ -69,6 +84,7 @@ class ResearchRuntime:
             if (sha(directory/'adapter_model.safetensors') != ADAPTERS[key]['sha256']
                 or adapter_cfg.get('base_model_name_or_path') != BASE_MODEL
                 or adapter_cfg.get('peft_type') != 'LORA'
+                or adapter_cfg.get('r') != 16 or adapter_cfg.get('lora_alpha') != 32
                 or adapter.get('training_rows') != ADAPTERS[key]['training_rows']):
                 raise ValueError('Adapter compatibility/provenance differs')
             self.adapter_names.append(key)

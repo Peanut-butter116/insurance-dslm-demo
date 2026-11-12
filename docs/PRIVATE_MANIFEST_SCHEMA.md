@@ -18,9 +18,13 @@ All paths are resolved under the indicated private roots and all inventories use
   },
   "asset_root": "/private-assets/models-and-retrieval",
   "asset_inventory": {
+    "d1000/receipt.json": "<sha256>",
+    "d1000/dataset_manifest.json": "<sha256>",
     "d1000/adapter/adapter_model.safetensors": "<sha256>",
     "d1000/adapter/adapter_config.json": "<sha256>",
     "d1000/adapter/tokenizer_config.json": "<sha256>",
+    "d1500/receipt.json": "<sha256>",
+    "d1500/dataset_manifest.json": "<sha256>",
     "d1500/adapter/adapter_model.safetensors": "<sha256>",
     "d1500/adapter/adapter_config.json": "<sha256>",
     "d1500/adapter/tokenizer_config.json": "<sha256>",
@@ -29,8 +33,8 @@ All paths are resolved under the indicated private roots and all inventories use
     "retrieval/chroma/chroma.sqlite3": "<sha256>"
   },
   "adapters": {
-    "D1000": {"path": "d1000/adapter", "training_rows": 751},
-    "D1500": {"path": "d1500/adapter", "training_rows": 1221}
+    "D1000": {"path": "d1000/adapter", "training_rows": 751, "receipt_path": "d1000/receipt.json", "dataset_manifest_path": "d1000/dataset_manifest.json"},
+    "D1500": {"path": "d1500/adapter", "training_rows": 1221, "receipt_path": "d1500/receipt.json", "dataset_manifest_path": "d1500/dataset_manifest.json"}
   },
   "retrieval": {
     "path": "retrieval",

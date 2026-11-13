@@ -1,0 +1,5 @@
+-r requirements.txt
+-r requirements-api.txt
+pytest>=8,<10
+
+-r requirements-gradio.txt

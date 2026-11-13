@@ -7,6 +7,7 @@ All paths are resolved under the indicated private roots and all inventories use
 ```json
 {
   "public_generation_approved": false,
+  "privacy_chunks_path": "retrieval/data/chunks.jsonl",
   "research_root": "/private-assets/research-code",
   "research_inventory": {
     "experiments/core.py": "<sha256>",
@@ -63,3 +64,10 @@ quote, transformed leak or memorised fact. For an unrestricted public meeting us
 an independently authored, approved synthetic corpus and disclose the corpus change;
 otherwise keep authenticated demonstrator access and review output release policy.
 No streaming or raw generation logs are enabled.
+
+
+Base/SFT-only startup is independent of index availability. Hash-bound private screening
+chunks remain required for output protection. If the Chroma database/index manifest or
+original embedding URL is missing, `rag_available=false`; base/SFT can start after the
+normal approval/provenance gates. A requested RAG generation fails explicitly. Existing
+inventoried file hashes are never ignored, and no replacement index/embedding is built.

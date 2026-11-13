@@ -29,6 +29,12 @@ def verify_files(root, inventory):
         if root not in p.parents or not p.is_file() or sha(p) != expected:
             raise ValueError('Private asset or code inventory differs')
 
+def retrieval_configured(assets, manifest):
+    r = manifest.get('retrieval') or {}
+    home = Path(assets) / r.get('path', 'retrieval')
+    return bool(r.get('embedding_url') and (home/'index_manifest.json').is_file()
+                and (home/'chroma/chroma.sqlite3').is_file())
+
 class ResearchRuntime:
     @classmethod
     def from_environment(cls):
@@ -89,8 +95,11 @@ class ResearchRuntime:
                 raise ValueError('Adapter compatibility/provenance differs')
             self.adapter_names.append(key)
         self.rag_available = False
-        all_chunks = []
-        if manifest.get('retrieval'):
+        privacy_relative = manifest.get('privacy_chunks_path', 'retrieval/data/chunks.jsonl')
+        if privacy_relative not in manifest['asset_inventory']:
+            raise ValueError('Private wording inventory must be hash-bound')
+        all_chunks = core.rows(assets / privacy_relative)
+        if retrieval_configured(assets, manifest):
             r = manifest['retrieval']
             home = assets / r['path']
             for name in ('index_manifest.json', 'data/chunks.jsonl'):

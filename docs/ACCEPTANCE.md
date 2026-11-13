@@ -2,7 +2,7 @@
 
 ## What was actually executed
 
-Non-billable local checks use synthetic fixtures and retained aggregate metadata only.24tests cover API auth,
+Non-billable local checks use synthetic fixtures and retained aggregate metadata only.25tests cover API auth,
 request validation and body limits, configuration routing, no response cache,
 persistent quota, concurrency rejection, sanitized errors, citation metadata/excerpt
 allowlists, restricted passage withholding, path/hash validation, actual runtime
@@ -66,3 +66,9 @@ Citation resolution is identifier matching, not a semantic correctness/support s
 Application request quota does not cap cloud spend from startup/health calls. Use
 platform proxy auth, meeting code, expiry, max1container, workspace usage/spend caps,
 and explicit shutdown. No automatic retries or second model/provider are used.
+
+
+Final hosted readback confirmed notebook privacy and the entire189,052,500byte
+serving bundle hash; all23inventoriedfiles reverified. No private model archive was
+downloaded locally. Base/SFT-only startup no longer depends on missing RAG assets;
+private screening chunks and public output-release gates remain required.

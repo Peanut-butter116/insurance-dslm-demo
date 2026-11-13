@@ -130,3 +130,7 @@ No index was rebuilt or embedding weights substituted. Consequently the bundle
 is labelled ADAPTER_BUNDLE_VERIFIED_RAG_RUNTIME_PENDING and public-generation
 approval remainsfalse. GPU loading/latency/VRAM measurements are still pending
 owner approval. Full private paths, hashes and receipts remain outside this repo.
+
+Independent hosted whole-bundle readback subsequently passed with notebook privacy
+confirmed and all23inventoryentriesverified. Base/SFT can be activated independently
+after approval; RAG requests remain unavailable until the original index/service returns.

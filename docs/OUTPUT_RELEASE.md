@@ -33,3 +33,11 @@ No private Kaggle token or Modal credential may be placed in browser JavaScript.
 RAG remains disabled until the original Chroma index, Nomic embedding runtime and
 BGE dependency identity are recovered; no paid or substitute retrieval service is
 activated. No LLM judging, retraining or historical response replay is part of the demo.
+
+## Remote Gradio meeting access
+
+The local single-page UI does not broaden this policy. A real runtime cannot be
+mounted into its HTTP app without an audience-specific `ReleaseReview`, an explicitly
+approved runtime manifest with the matching review ID, platform/exposure permission,
+and blocked private file roots. Private-test mode is rejected for remote mounting.
+See [the route assessment](SINGLE_PAGE_DEMO.md). No remote release is approved yet.

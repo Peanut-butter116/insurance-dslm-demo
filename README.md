@@ -4,10 +4,11 @@ Tech Mahindra Makers Lab | Policy-Grounded Question Answering
 
 **Website preview is live:** https://peanut-butter116.github.io/insurance-dslm-demo/
 
-**Real inference remains unavailable**, pending owner approval, private asset staging
-and recovery of the original embedding/index runtime. The public preview runs the
+**Real inference remains unavailable**, pending a successful real-GPU test and approved remote access.
+RAG is separately unavailable because the original index/embedding runtime is missing. The public preview runs the
 same Streamlit interface in the browser with generation disabled.
-No recorded answers are used. No model service, paid GPU or billing has been activated.
+No recorded answers are used. No public model service, paid GPU or billing has been activated. The one private
+free-GPU smoke stopped during environment setup before any model prediction.
 
 The public Streamlit frontend calls an authenticated private FastAPI backend.
 One pinned Ministral 3B base is loaded once; D1000 and D1500 PEFT adapters are selected
@@ -53,3 +54,7 @@ Current strict-budget decision: **Modal is blocked** under the owner's $1-credit
 $0-out-of-pocket conditions. A private free-Kaggle meeting route is prepared but
 not activated: [instructions](docs/KAGGLE_MEETING.md), [financial assessment](docs/STRICT_ZERO_COST.md).
 The public preview stays unchanged and has no live model connection.
+
+Single-page Gradio preparation and route assessment: [SINGLE_PAGE_DEMO.md](docs/SINGLE_PAGE_DEMO.md).
+The authenticated loopback page is reviewable without a GPU; no share tunnel or
+ZeroGPU deployment has been activated. Remote generated-answer release remains blocked.

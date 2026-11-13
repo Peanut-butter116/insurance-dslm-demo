@@ -214,3 +214,10 @@ free headroom is 240 seconds before Base, 180 before D1000 and 120 before D1500,
 including a 60-second reserve. The authenticated technical RPCs are undocumented,
 not anonymous; they return only receipts/hashes and keep the answer gate closed.
 The runtime read token is checked for exact fine-grained read-only repository scopes.
+
+The live permission preflight exposed an HF schema detail: scoped tokens can include
+an empty owner-context entry, while selected-repository write is named `repo.write`
+and implicit selected-repository access is `repo.access.read`. The validator now
+ignores only empty entries, checks every active entity against the exact approved
+repository set, and rejects active namespace/global grants. No permissions were
+changed or broadened to resolve the false-positive preflight.

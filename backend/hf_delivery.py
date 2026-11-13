@@ -78,14 +78,15 @@ def verify_scoped_token(api, token, *, namespace, repositories, write=False):
     user=api.whoami(token=token)
     metadata=user.get('auth',{}).get('accessToken',{})
     fine=metadata.get('fineGrained',{})
-    scopes=fine.get('scoped',[])
+    # HF includes empty owner-context entries; they grant no permissions.
+    scopes=[s for s in fine.get('scoped',[]) if s.get('permissions')]
     names=[s.get('entity',{}).get('name') for s in scopes]
     permissions=[p for s in scopes for p in s.get('permissions',[])]
-    permitted={'repo.content.read','repo.content.write'} if write else {'repo.content.read'}
+    permitted={'repo.access.read','repo.content.read','repo.write'} if write else {'repo.access.read','repo.content.read'}
     if (user.get('name')!=namespace or metadata.get('role')!='fineGrained'
         or fine.get('global') or fine.get('canReadGatedRepos')
         or set(names)!=set(repositories) or len(names)!=len(repositories)
         or not permissions or any(p not in permitted for p in permissions)
-        or (write and 'repo.content.write' not in permissions)):
+        or (write and 'repo.write' not in permissions)):
         raise ValueError('Exact fine-grained repository token scope not established')
     return True

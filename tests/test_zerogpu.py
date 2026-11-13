@@ -193,3 +193,15 @@ def test_authenticated_cpu_reservation_state_carries_to_separate_worker_call(tmp
         result=client.post('/gradio_api/run/predict',json={'fn_index':1,'data':[None],'session_hash':'fixture'})
         assert result.status_code==200 and result.json()['data'][0]['status']=='passed'
         assert 'SYNTHETIC_PRIVATE_MARKER' not in result.text
+
+def test_hf_permission_schema_ignores_empty_owner_context_but_rejects_owner_grants():
+    from backend.hf_delivery import verify_scoped_token
+    repo='synthetic-owner/insurance-slm-private-serving'
+    fine={'global':[],'scoped':[{'entity':{'name':repo,'type':'model'},'permissions':['repo.access.read','repo.content.read','repo.write']},
+          {'entity':{'name':'synthetic-owner','type':'user'},'permissions':[]}]}
+    meta={'name':'synthetic-owner','auth':{'accessToken':{'role':'fineGrained','fineGrained':fine}}}
+    api=SimpleNamespace(whoami=lambda **k:meta)
+    assert verify_scoped_token(api,'synthetic',namespace='synthetic-owner',repositories=[repo],write=True)
+    with pytest.raises(ValueError):verify_scoped_token(api,'synthetic',namespace='synthetic-owner',repositories=[repo],write=False)
+    fine['scoped'][1]['permissions']=['repo.write']
+    with pytest.raises(ValueError):verify_scoped_token(api,'synthetic',namespace='synthetic-owner',repositories=[repo],write=True)

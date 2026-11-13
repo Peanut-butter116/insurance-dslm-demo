@@ -81,6 +81,12 @@ function beginDemo(){
   $("status").textContent="Processing example";
   $("output").innerHTML='<div class="empty"><strong>Preparing selected scenario…</strong><p>Example retrieval and answer preparation</p></div>';
   $("skip").classList.remove("hidden");
+  // Five prepared question scenarios take 30, 40, 50, 60 and 70 seconds.
+  // Their arithmetic mean is 50 seconds; no real model latency is implied.
+  const secondsByScenario={courtesy:30,windscreen:40,theft:50,business:60,unknown:70};
+  const q=$("question").value.trim().toLowerCase();
+  const matchingScenario=/courtesy|replacement car/.test(q)?"courtesy":/windscreen|glass/.test(q)?"windscreen":/stol|theft/.test(q)?"theft":/deliver|business|courier/.test(q)?"business":/motorbike|france|rental|rent/.test(q)?"unknown":$("preset").value;
+  const durationSeconds=secondsByScenario[matchingScenario]||50;
   const started=Date.now();
   function finish(){
     clearTimeout(pendingTimer);clearInterval(progressTimer);
@@ -90,10 +96,10 @@ function beginDemo(){
     $("skip").classList.add("hidden");
     displayResponse();
   }
-  pendingTimer=setTimeout(finish,120000);
+  pendingTimer=setTimeout(finish,durationSeconds*1000);
   $("skip").onclick=finish;
   progressTimer=setInterval(()=>{
-    const remain=Math.max(0,120-Math.floor((Date.now()-started)/1000));
+    const remain=Math.max(0,durationSeconds-Math.floor((Date.now()-started)/1000));
     $("progress").textContent="Prepared response in "+Math.floor(remain/60)+":"+String(remain%60).padStart(2,"0")+" · Show answer now to skip";
   },500);
 }

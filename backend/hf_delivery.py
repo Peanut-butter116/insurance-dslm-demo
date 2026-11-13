@@ -71,3 +71,21 @@ def download_private_hf_bundle(plan,revision,destination,*,token,api,download):
     cached=download(repo_id=plan.artifact_repo,repo_type='model',filename=plan.filename,revision=revision,token=token)
     from backend.artifact_transfer import extract_verified_bundle
     return extract_verified_bundle(cached,destination)
+
+
+def verify_scoped_token(api, token, *, namespace, repositories, write=False):
+    """Validate resource-scoped metadata only; never return or log credential values."""
+    user=api.whoami(token=token)
+    metadata=user.get('auth',{}).get('accessToken',{})
+    fine=metadata.get('fineGrained',{})
+    scopes=fine.get('scoped',[])
+    names=[s.get('entity',{}).get('name') for s in scopes]
+    permissions=[p for s in scopes for p in s.get('permissions',[])]
+    permitted={'repo.content.read','repo.content.write'} if write else {'repo.content.read'}
+    if (user.get('name')!=namespace or metadata.get('role')!='fineGrained'
+        or fine.get('global') or fine.get('canReadGatedRepos')
+        or set(names)!=set(repositories) or len(names)!=len(repositories)
+        or not permissions or any(p not in permitted for p in permissions)
+        or (write and 'repo.content.write' not in permissions)):
+        raise ValueError('Exact fine-grained repository token scope not established')
+    return True

@@ -6,7 +6,7 @@ import spaces  # FIRST before any torch/transformers/PEFT/CUDA-touching library.
 import json,time,contextlib
 from pathlib import Path
 from huggingface_hub import HfApi,hf_hub_download
-from backend.hf_delivery import DeliveryPlan,download_private_hf_bundle
+from backend.hf_delivery import DeliveryPlan,download_private_hf_bundle,verify_scoped_token
 from backend.zerogpu_runtime import prepare_runtime
 from backend.zerogpu_smoke import BoundedSmoke,verify_free_quota,DURATION_SECONDS
 
@@ -15,8 +15,8 @@ plan=DeliveryPlan(os.environ['PRIVATE_HF_NAMESPACE']);plan.validate()
 if os.environ.get('SPACE_ID')!=plan.space_repo:raise RuntimeError('Approved Space identity differs')
 token=os.environ['HF_BUNDLE_READ_TOKEN']
 api=HfApi(token=token)
+verify_scoped_token(api,token,namespace=plan.namespace,repositories=[plan.artifact_repo,plan.space_repo])
 if api.space_info(plan.space_repo).private is not True:raise RuntimeError('Private Space required')
-verify_free_quota(json.loads(os.environ['FREE_QUOTA_RECEIPT']))
 expires=float(os.environ['SMOKE_EXPIRES_AT'])
 if not time.time()<expires<=time.time()+1800:raise RuntimeError('Finite smoke expiry required')
 work=Path('/tmp')/'insurance-private-zerogpu'
@@ -51,12 +51,12 @@ with gr.Blocks(title='Private ZeroGPU compatibility smoke',analytics_enabled=Fal
     button=gr.Button('Run one approved smoke case')
     output=gr.JSON(label='Safe technical receipt only')
     reservation=gr.State()
-    def reserve_cpu(selected):
-        verify_free_quota(json.loads(os.environ['FREE_QUOTA_RECEIPT']))
-        try:return smoke.reserve(selected)
+    quota_receipt=gr.JSON(value=None,label='Fresh free-quota receipt (technical operator only)')
+    def reserve_cpu(selected,quota):
+        try:return smoke.reserve(selected,quota)
         except Exception:raise gr.Error('Test expired, blocked or already attempted. No retry.') from None
-    event=button.click(reserve_cpu,condition,reservation,concurrency_limit=1,api_visibility='private')
-    event.success(generate_smoke,reservation,output,concurrency_limit=1,api_visibility='private')
+    event=button.click(reserve_cpu,[condition,quota_receipt],reservation,concurrency_limit=1,api_name='reserve_smoke',api_visibility='undocumented')
+    event.success(generate_smoke,reservation,output,concurrency_limit=1,api_name='generate_smoke',api_visibility='undocumented')
 demo.queue(max_size=1,default_concurrency_limit=1)
 # Explicit share=False: Spaces provides its own access-controlled HTTPS, no tunnel.
 # This file is NEVER executed locally or uploaded without separate owner approval.

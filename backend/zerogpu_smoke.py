@@ -8,11 +8,13 @@ DURATION_SECONDS=60
 REQUIRED_FREE_SECONDS=240  # Three 60s requests + 60s unspent margin; never paid extension.
 
 
-def verify_free_quota(receipt):
+def verify_free_quota(receipt, requests_left=3):
+    if not isinstance(receipt,dict) or requests_left not in (1,2,3):raise ValueError("Fresh quota receipt required")
+    required_seconds=requests_left*DURATION_SECONDS+60
     if (receipt.get('free_account_verified') is not True or receipt.get('no_paid_extension') is not True
         or receipt.get('overquota_used')!=0 or not 0<=time.time()-receipt.get('checked_at',0)<=300
-        or receipt.get('remaining',0)<REQUIRED_FREE_SECONDS):
-        raise ValueError('Fresh verified free quota of at least 240 seconds required')
+        or receipt.get('remaining',0)<required_seconds):
+        raise ValueError('Fresh verified free quota of enough for remaining cases plus margin required')
 
 class BoundedSmoke:
     def __init__(self,runtime,journal,expires_at):
@@ -21,7 +23,7 @@ class BoundedSmoke:
         with sqlite3.connect(self.journal) as db:
             db.execute('CREATE TABLE IF NOT EXISTS cases (condition TEXT PRIMARY KEY,status TEXT NOT NULL,receipt TEXT,nonce TEXT)')
 
-    def reserve(self,condition):
+    def reserve(self,condition,quota_receipt=None):
         # Main-process CPU preflight BEFORE ZeroGPU allocation; rejects repeat clicks.
         if time.time()>=self.expires_at:raise ValueError('Smoke approval expired')
         with sqlite3.connect(self.journal,timeout=5) as db:
@@ -29,6 +31,7 @@ class BoundedSmoke:
             previous=dict(db.execute('SELECT condition,status FROM cases').fetchall())
             if (condition not in CONDITIONS or condition in previous or any(v!='passed' for v in previous.values())
                 or condition!=CONDITIONS[len(previous)]):raise ValueError('No retries or out-of-order smoke requests')
+            verify_free_quota(quota_receipt,requests_left=len(CONDITIONS)-len(previous))
             nonce=secrets.token_hex(24)
             db.execute('INSERT INTO cases VALUES (?,?,NULL,?)',(condition,'reserved',nonce))
         return {'condition':condition,'nonce':nonce}

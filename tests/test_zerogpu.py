@@ -7,6 +7,10 @@ from backend.hf_delivery import DeliveryPlan,verify_transfer_approval,download_p
 from config.model_registry import BASE_MODEL,BASE_REVISION
 
 
+def fresh_quota(remaining=300):
+    return {'free_account_verified':True,'no_paid_extension':True,'overquota_used':0,'checked_at':time.time(),'remaining':remaining}
+
+
 def test_symbolic_nf4_loader_preserves_original_contract(monkeypatch):
     calls={};dtype=SimpleNamespace()
     dtype.__str__=lambda:'torch.bfloat16'
@@ -66,10 +70,10 @@ def test_smoke_worker_forks_use_single_use_reservations_and_no_answer_output(tmp
           'gpu_measurements':{'total_bytes':1000},'allocation_diagnostics':{'loaded_in_4bit':True},'latency_seconds':1,'final_answer_present':True,'refused':False}
     monkeypatch.setattr(zr,'measure_prediction',measured)
     journal=tmp_path/'receipt.sqlite3';s=BoundedSmoke(object(),journal,time.time()+600)
-    with pytest.raises(ValueError):s.reserve('D1000')
+    with pytest.raises(ValueError):s.reserve('D1000',fresh_quota())
     for key in ('base','D1000','D1500'):
-        reservation=s.reserve(key)
-        with pytest.raises(ValueError):s.reserve(key)
+        reservation=s.reserve(key,fresh_quota())
+        with pytest.raises(ValueError):s.reserve(key,fresh_quota())
         # A fresh Python object represents the separate worker process, sharing disk only.
         worker=BoundedSmoke(object(),journal,s.expires_at)
         row=worker.predict(reservation)
@@ -84,9 +88,9 @@ def test_failed_or_unknown_case_cannot_be_replayed(tmp_path,monkeypatch):
     s=BoundedSmoke(object(),tmp_path/'receipt.sqlite3',time.time()+600)
     def failed(*a):raise RuntimeError('SYNTHETIC_SECRET_MARKER')
     monkeypatch.setattr(zr,'measure_prediction',failed)
-    row=s.predict(s.reserve('base'));assert row['status']=='failed' and 'SYNTHETIC_SECRET' not in str(row)
-    with pytest.raises(ValueError):s.reserve('D1000')
-    with pytest.raises(ValueError):s.reserve('base')
+    row=s.predict(s.reserve('base',fresh_quota()));assert row['status']=='failed' and 'SYNTHETIC_SECRET' not in str(row)
+    with pytest.raises(ValueError):s.reserve('D1000',fresh_quota())
+    with pytest.raises(ValueError):s.reserve('base',fresh_quota())
 
 def test_unapproved_transfer_performs_no_remote_call(tmp_path):
     from backend.hf_delivery import upload_verified_cloud_bundle
@@ -145,3 +149,47 @@ def test_hosted_upload_checks_acl_and_binds_parent_commit(tmp_path,monkeypatch):
     result=delivery.upload_verified_cloud_bundle(plan,approval,archive,token='synthetic',api=api)
     assert result['revision']=='b'*40 and api.upload['parent_commit']=='a'*40
     assert api.upload['repo_id']==plan.artifact_repo and api.upload['path_in_repo']=='private-serving-bundle.tar.gz'
+
+def test_quota_is_fresh_before_each_reservation_and_scales_with_remaining_cases(tmp_path,monkeypatch):
+    import backend.zerogpu_runtime as zr
+    s=BoundedSmoke(object(),tmp_path/'bounded.sqlite3',time.time()+600)
+    monkeypatch.setattr(zr,'measure_prediction',lambda *a:{'answer':'SYNTHETIC','actual_selection_proof':{},
+       'gpu_measurements':{},'allocation_diagnostics':{},'final_answer_present':True})
+    with pytest.raises(ValueError):s.reserve('base',fresh_quota(239))
+    for key,remaining in [('base',240),('D1000',180),('D1500',120)]:
+        stale={**fresh_quota(remaining),'checked_at':time.time()-301}
+        with pytest.raises(ValueError):s.reserve(key,stale)
+        row=s.predict(s.reserve(key,fresh_quota(remaining)))
+        assert row['status']=='passed'
+
+def test_runtime_token_must_be_read_only_and_exactly_resource_scoped():
+    from backend.hf_delivery import verify_scoped_token
+    model='synthetic-owner/insurance-slm-private-serving';space='synthetic-owner/insurance-slm-private-meeting'
+    meta={'name':'synthetic-owner','auth':{'accessToken':{'role':'fineGrained','fineGrained':{'global':[],
+       'scoped':[{'entity':{'name':repo},'permissions':['repo.content.read']} for repo in [model,space]]}}}}
+    api=SimpleNamespace(whoami=lambda **k:meta)
+    assert verify_scoped_token(api,'synthetic',namespace='synthetic-owner',repositories=[model,space])
+    meta['auth']['accessToken']['fineGrained']['scoped'][0]['permissions'].append('repo.content.write')
+    with pytest.raises(ValueError):verify_scoped_token(api,'synthetic',namespace='synthetic-owner',repositories=[model,space])
+
+def test_authenticated_cpu_reservation_state_carries_to_separate_worker_call(tmp_path,monkeypatch):
+    import gradio as gr
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    import backend.zerogpu_runtime as zr
+    monkeypatch.setattr(zr,'measure_prediction',lambda *a:{'answer':'SYNTHETIC_PRIVATE_MARKER','actual_selection_proof':{},
+       'gpu_measurements':{},'allocation_diagnostics':{},'final_answer_present':True})
+    smoke=BoundedSmoke(object(),tmp_path/'state.sqlite3',time.time()+600)
+    with gr.Blocks(analytics_enabled=False) as demo:
+        cond=gr.Textbox();quota=gr.JSON();state=gr.State();out=gr.JSON();button=gr.Button()
+        event=button.click(smoke.reserve,[cond,quota],state,api_name='reserve_smoke',api_visibility='undocumented')
+        event.success(smoke.predict,state,out,api_name='generate_smoke',api_visibility='undocumented')
+    app=gr.mount_gradio_app(FastAPI(),demo,path='/',auth=('synthetic-owner','x'*40),show_error=False)
+    with TestClient(app) as client:
+        assert client.post('/gradio_api/run/predict',json={'fn_index':0,'data':['base',fresh_quota()],'session_hash':'fixture'}).status_code==401
+        client.post('/login',data={'username':'synthetic-owner','password':'x'*40})
+        reserved=client.post('/gradio_api/run/predict',json={'fn_index':0,'data':['base',fresh_quota()],'session_hash':'fixture'})
+        assert reserved.status_code==200
+        result=client.post('/gradio_api/run/predict',json={'fn_index':1,'data':[None],'session_hash':'fixture'})
+        assert result.status_code==200 and result.json()['data'][0]['status']=='passed'
+        assert 'SYNTHETIC_PRIVATE_MARKER' not in result.text

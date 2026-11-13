@@ -179,11 +179,12 @@ handler directly. There is no tunnel or service-substitution fallback.
 Only after approvals, operator configuration includes:
 
 - Variables: `PRIVATE_HF_NAMESPACE`, immutable `PRIVATE_BUNDLE_REVISION`, finite
-  `SMOKE_EXPIRES_AT` (<=30min), fresh `FREE_QUOTA_RECEIPT` and explicit
+  `SMOKE_EXPIRES_AT` (<=30min) and explicit
   `ZEROGPU_SMOKE_APPROVED=yes`. Space must supply `SPACES_ZERO_GPU=1` itself.
 - Secrets: `HF_BUNDLE_READ_TOKEN`, named `MEETING_USERNAME`, random
   `MEETING_PASSWORD` of at least32 characters. No credentials in the public source.
-- The quota receipt contains `remaining`, `overquota_used:0`, `checked_at`,
+- Immediately before each technical request, supply the quota receipt through the
+  authenticated operator interface/RPC, not a startup environment variable. It contains `remaining`, `overquota_used:0`, `checked_at`,
   `free_account_verified:true`, `no_paid_extension:true`; do not assert these flags
   unless the corresponding account state was actually verified. It expires after5min.
 
@@ -204,3 +205,12 @@ aggregate-only compatibility template is not presented as the completed meeting 
 
 The existing Gradio design and [original website preview](https://peanut-butter116.github.io/insurance-dslm-demo/)
 are unchanged. No Kaggle tunnel is pursued in this phase.
+
+## Deployment-stage preflight correction
+
+Quota is now checked at each CPU reservation using a fresh operator receipt, after
+model startup. It is not frozen into a five-minute Space startup variable. Required
+free headroom is 240 seconds before Base, 180 before D1000 and 120 before D1500,
+including a 60-second reserve. The authenticated technical RPCs are undocumented,
+not anonymous; they return only receipts/hashes and keep the answer gate closed.
+The runtime read token is checked for exact fine-grained read-only repository scopes.

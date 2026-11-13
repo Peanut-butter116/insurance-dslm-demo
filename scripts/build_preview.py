@@ -8,7 +8,7 @@ def build(output=None):
     target = Path(output) if output else ROOT/'docs/preview'
     target.mkdir(parents=True, exist_ok=True)
     files = {name:(ROOT/name).read_text() for name in FILES}
-    files['app.py'] = "import os\nos.environ['PUBLIC_PREVIEW'] = '1'\n" + files['app.py']
+    files['app.py'] = files['app.py'].replace("import os\n", "import os\nos.environ['PUBLIC_PREVIEW'] = '1'\n", 1)
     (target/'files.json').write_text(json.dumps(files, ensure_ascii=False))
     return files
 

@@ -20,7 +20,7 @@
 <h2 style="margin-top:30px">2. Choose a question</h2>
 <div class="field"><label for="preset">Example scenario</label><select id="preset"><option value="courtesy">Courtesy car during repair</option><option value="windscreen">Windscreen replacement</option><option value="theft">Vehicle theft and reporting</option><option value="business">Business use exclusion</option><option value="unknown">Question outside the sample policy</option></select></div>
 <div class="field"><label for="question">Your question</label><textarea id="question"></textarea><p class="hint">Custom wording is matched only to the five prepared scenarios. Arbitrary questions are not passed to an LLM.</p></div>
-<button id="generate" class="full">Generate Answer</button>
+<button id="generate" class="full">Generate Answer</button><p class="hint" id="progress" aria-live="polite"></p><button id="skip" class="secondary full hidden" type="button">Show answer now</button>
 </section>
 <section class="panel result"><div class="result-head"><h2>3. Answer &amp; evidence</h2><span class="pill" id="status">Ready</span></div><div id="output" class="empty">Select a configuration and click <strong>Generate Answer</strong>.</div></section>
 </div>
@@ -48,10 +48,11 @@ business:{q:"Am I covered when I use my car for deliveries?",title:"Business use
 unknown:{q:"Does this policy cover renting a motorbike in France?",title:"Insufficient evidence",cite:"No matching source",url:"",policy:"",strong:"I cannot verify motorbike rental cover abroad from the sources in this demonstration. Please consult the specific rental and insurance documents.",basic:"There is not enough evidence here to confirm cover for an overseas motorbike rental."}
 };
 const $=id=>document.getElementById(id);
+let pendingTimer=null, progressTimer=null;
 function setQuestion(){if($("preset").value!=="custom")$("question").value=questions[$("preset").value].q;}
 function sizeNote(){const s=$("size").value;$("sizeNote").textContent=s==="D500"?"Early stage selected; no comparable D500-trained results.":s==="D1000"?"Verified Ministral SFT adapter trained on 751 rows; this page does not run it.":"Verified Ministral SFT adapter trained on 1,221 rows; this page does not run it."}
 $("preset").addEventListener("change",setQuestion);$("size").addEventListener("change",sizeNote);setQuestion();sizeNote();
-$("generate").addEventListener("click",()=>{
+function displayResponse(){
 let q=$("question").value.trim();if(!q){$("output").innerHTML='<p class="error">Please enter a question.</p>';return;}
 const text=q.toLowerCase();let key=$("preset").value;
 if(!questions[key]||q!==questions[key].q){key=/courtesy|replacement car/.test(text)?"courtesy":/windscreen|glass/.test(text)?"windscreen":/stol|theft/.test(text)?"theft":/deliver|business|courier/.test(text)?"business":/motorbike|france|rental|rent/.test(text)?"unknown":null}
@@ -61,16 +62,40 @@ let answer;
 if(key==="unknown")answer="I cannot confirm this from the fictional demonstration policy. The retrieved sample does not contain an applicable clause.";
 else if(!rag&&!sft)answer=d.basic+" I have not checked policy evidence.";
 else if(!rag&&sft)answer=d.strong+" This answer has not been checked against retrieved evidence.";
-else if(rag&&!sft)answer=d.basic+" Check the source information below before relying on this answer. [DEMO-MOTOR-001]";
-else answer=d.strong+" [DEMO-MOTOR-001]";
+else if(rag&&!sft)answer=d.basic+" Check the source information below before relying on this answer. [Source: "+d.cite+"]";
+else answer=d.strong+" [Source: "+d.cite+"]";
 
 $("status").textContent="Example response · "+(sft?"SFT":"Base")+(rag?" + RAG":"");
 $("output").replaceChildren();
 let meta=document.createElement("div");meta.className="details";for(const [label,value] of [["Model",model],["Condition",(sft?"SFT":"Base")+(rag?" + RAG":"")],["Data stage",size]]){const el=document.createElement("div");const a=document.createElement("small");a.textContent=label;const b=document.createElement("strong");b.textContent=value;el.append(a,b);meta.append(el)}$("output").append(meta);
 let h=document.createElement("div");h.className="eyebrow";h.textContent="Answer";let p=document.createElement("p");p.className="answer";p.textContent=answer;$("output").append(h,p);
 let evidence=document.createElement("div");evidence.className="evidence";let heading=document.createElement("div");heading.className="eyebrow";heading.textContent="Cited evidence";evidence.append(heading);
-if(rag&&key!=="unknown"){let article=document.createElement("article"),strong=document.createElement("strong"),quote=document.createElement("blockquote");strong.textContent=d.cite;quote.textContent=d.policy;article.append(strong,quote);if(d.url){const a=document.createElement("a");a.href=d.url;a.target="_blank";a.rel="noopener noreferrer";a.textContent="View source";a.style.cssText="display:inline-block;margin-top:8px;font-size:12px;color:#ba182a;font-weight:700";article.append(a)}evidence.append(article)}
+if(rag&&key!=="unknown"){let article=document.createElement("article"),strong=document.createElement("strong"),quote=document.createElement("blockquote");strong.textContent=d.cite;quote.textContent="Source summary: "+d.policy;article.append(strong,quote);if(d.url){const a=document.createElement("a");a.href=d.url;a.target="_blank";a.rel="noopener noreferrer";a.textContent="View source";a.style.cssText="display:inline-block;margin-top:8px;font-size:12px;color:#ba182a;font-weight:700";article.append(a)}evidence.append(article)}
 else{let line=document.createElement("p");line.className="hint";line.textContent=rag?"No matching reference available.":"RAG is off: no retrieval and no verified citation. Evidence is intentionally not shown.";evidence.append(line)}$("output").append(evidence);
 
-});
+}
+function beginDemo(){
+  if(pendingTimer)return;
+  $("generate").disabled=true;
+  $("generate").textContent="Preparing answer…";
+  $("status").textContent="Processing example";
+  $("output").innerHTML='<div class="empty"><strong>Preparing selected scenario…</strong><p>Example retrieval and answer preparation</p></div>';
+  $("skip").classList.remove("hidden");
+  const started=Date.now();
+  function finish(){
+    clearTimeout(pendingTimer);clearInterval(progressTimer);
+    pendingTimer=null;progressTimer=null;
+    $("generate").disabled=false;$("generate").textContent="Generate Answer";
+    $("progress").textContent="";
+    $("skip").classList.add("hidden");
+    displayResponse();
+  }
+  pendingTimer=setTimeout(finish,120000);
+  $("skip").onclick=finish;
+  progressTimer=setInterval(()=>{
+    const remain=Math.max(0,120-Math.floor((Date.now()-started)/1000));
+    $("progress").textContent="Prepared response in "+Math.floor(remain/60)+":"+String(remain%60).padStart(2,"0")+" · Show answer now to skip";
+  },500);
+}
+$("generate").addEventListener("click",beginDemo);
 </script></body></html>

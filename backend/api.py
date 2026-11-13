@@ -30,7 +30,7 @@ class Quota:
                 raise HTTPException(429, 'Demonstration quota reached')
             db.execute('INSERT INTO requests VALUES (?)', (now,))
 
-def create_app(engine=None, token=None, quota=None):
+def create_app(engine=None, token=None, quota=None, expires_at=None):
     token = token or os.environ.get('INFERENCE_API_TOKEN', '')
     gate = threading.Lock()
     @asynccontextmanager
@@ -61,7 +61,7 @@ def create_app(engine=None, token=None, quota=None):
             request._body = bytes(body)
         return await call_next(request)
     def authenticate(request: Request):
-        expires = float(os.environ.get('DEMO_EXPIRES_AT', '0'))
+        expires = expires_at if expires_at is not None else float(os.environ.get('DEMO_EXPIRES_AT', '0'))
         if expires and time.time() >= expires:
             raise HTTPException(403, 'Meeting demonstration has ended')
         supplied = request.headers.get('Authorization', '')

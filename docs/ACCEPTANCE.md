@@ -2,7 +2,7 @@
 
 ## What was actually executed
 
-Non-billable local checks use synthetic fixtures and retained aggregate metadata only.25tests cover API auth,
+Non-billable local checks use synthetic fixtures and retained aggregate metadata only.35tests cover API auth,
 request validation and body limits, configuration routing, no response cache,
 persistent quota, concurrency rejection, sanitized errors, citation metadata/excerpt
 allowlists, restricted passage withholding, path/hash validation, actual runtime
@@ -72,3 +72,12 @@ Final hosted readback confirmed notebook privacy and the entire189,052,500byte
 serving bundle hash; all23inventoriedfiles reverified. No private model archive was
 downloaded locally. Base/SFT-only startup no longer depends on missing RAG assets;
 private screening chunks and public output-release gates remain required.
+
+
+Current account/budget decision: Modal authentication works, but $0 net-spend
+control/credit expiry are unverified; no Modal resource was created. The private
+cloud-transfer helper and real-GPU smoke runner are prepared and unexecuted.
+The free-Kaggle session is also unactivated. Synthetic tests cover its authenticated
+in-process backend, three condition routes, closure and default activation denial.
+Official Kaggle quota was checked read-only; account figures remain in private receipts.
+This does not claim GPU allocation or a public notebook inference endpoint.

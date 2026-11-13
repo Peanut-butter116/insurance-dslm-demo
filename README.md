@@ -47,3 +47,9 @@ Safety and remaining acceptance gates: [audit](docs/ACCEPTANCE.md).
 
 Public preview details: [FRONTEND_PREVIEW.md](docs/FRONTEND_PREVIEW.md).
 Week1/D500 recovery: [WEEK1_RECOVERY.md](docs/WEEK1_RECOVERY.md).
+
+
+Current strict-budget decision: **Modal is blocked** under the owner's $1-credit /
+$0-out-of-pocket conditions. A private free-Kaggle meeting route is prepared but
+not activated: [instructions](docs/KAGGLE_MEETING.md), [financial assessment](docs/STRICT_ZERO_COST.md).
+The public preview stays unchanged and has no live model connection.

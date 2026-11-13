@@ -1,3 +1,9 @@
+> Current owner constraint: $1 existing credit maximum, $0 out of pocket. Modal
+> is blocked because zero-spend enforcement/credit expiry are unverified. The safest
+> proposal is the private free-Kaggle route in [KAGGLE_MEETING.md](KAGGLE_MEETING.md).
+> No GPU route is activated. Older Modal meeting instructions below are conditional
+> reference only and are not approval. The public preview remains available.
+
 # Supervisor meeting sequence
 
 **Current status: temporarily unavailable; deployment and real-model verification

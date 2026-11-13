@@ -112,3 +112,21 @@ fixed reservation rate; a31minutewarmup/meetingsession about$0.5277192; combined
 image-build resources and taxes. Account credits/payment setup remain unverified.
 Do not activate paid GPU or automatic payments. The free public website preview
 runs browser Python and uses no GPU inference service.
+
+
+## Actual private CPU verification
+
+Both final adapters were recovered and hash-verified in a private hosted CPU job.
+Each safetensors file is98,882,136bytes including its header; the identical tensor
+layout fingerprints confirm static architecture compatibility. The combined
+serving-only archive is189,052,500bytes (about180.3MiB), including tokenizer files,
+receipts, private original inference code, frozen screening chunks and a private
+manifest. It contains no optimizer checkpoints, training answers, historical
+predictions or judge ledgers. This is an adapter bundle, not a base-weight cache.
+Base weights remain sourced from the original pinned repository.
+
+The exact existing Chroma index and original Nomic runtime were not recovered.
+No index was rebuilt or embedding weights substituted. Consequently the bundle
+is labelled ADAPTER_BUNDLE_VERIFIED_RAG_RUNTIME_PENDING and public-generation
+approval remainsfalse. GPU loading/latency/VRAM measurements are still pending
+owner approval. Full private paths, hashes and receipts remain outside this repo.

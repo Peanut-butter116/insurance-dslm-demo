@@ -26,14 +26,15 @@ the quota stores timestamps only. Provider infrastructure logs require separate 
 | Clean public application code, isolated feature branch | implemented |
 | Streamlit starts without secrets | locally tested; explicit unavailable status |
 | Base model identity | exact pinned ID/revision verified |
-| D1000/D1500 checkpoint identity | preserved research receipts/hashes verified |
+| D1000/D1500 checkpoint identity | exact archives/weights/manifests reverified in private CPU job; tensor layouts match |
 | D500 | disabled; recovered seed adapters have21rows, notD500; separate historical aggregates imported |
 | Question entry/examples/config controls | local synthetic UI tests passed |
 | API routing/adapter disable and switch logic | synthetic tests passed |
 | Auth, limits, serial inference, quota | locally tested |
 | Restricted excerpts / error sanitization | locally tested; empty default allowlists |
 | Arbitrary output non-disclosure | not proven; release review required |
-| Private source/index mount and Nomic service | operator staging/recovery still required |
+| Private serving bundle | 189,052,500byte hosted private archive prepared; no local weight download |
+| Original index and Nomic service | not recovered; RAG remains blocked |
 | Modal GPU image build and adapter loading | not run; approval required |
 | Actual base/RAG/D1000/D1500 inference | not tested on proposed deployment |
 | Five real meeting scenarios | pending activation; never replaced by mocks |

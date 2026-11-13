@@ -27,3 +27,7 @@ later experiments or infer a training-size effect.
 Exact private artifact locations and file hashes are recorded in the owner's
 private research recovery receipt. Only aggregate values and integrity fingerprints
 are public. D1000/D1500 registry entries and experimental results are unchanged.
+
+Additional older Qwen7B logs recorded239/265trainingrows; the inspected directories
+contained adapter configuration but no local safetensors weights. They are a different
+base and had no verifiedD500binding, so are not added to this3B live registry.

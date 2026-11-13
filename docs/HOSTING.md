@@ -101,3 +101,14 @@ its ASGI endpoint matches the frontend protocol and scale-tozero is prepared.
 4. Review metadata allowlist and output-release policy. Excerpt allowlist stays empty.
 5. GPU test verifies adapter switching, memory, runtime package compatibility and real
    answers. Then deploy frontend and test its actual public URL.
+
+## 13 November recheck
+
+Official Modal pricing and budget documentation were checked again; the listed
+L4/CPU/RAM rates above are unchanged. The proposed2dollar envelope is **not owner
+authorization**. A10minuteinitialsmoketest costs about$0.170232 at the conservative
+fixed reservation rate; a31minutewarmup/meetingsession about$0.5277192; combined
+41minutes about$0.6979512 before any extra embedding service, storage, transfer,
+image-build resources and taxes. Account credits/payment setup remain unverified.
+Do not activate paid GPU or automatic payments. The free public website preview
+runs browser Python and uses no GPU inference service.

@@ -2,7 +2,7 @@
 
 ## What was actually executed
 
-Non-billable local checks use synthetic fixtures only.18tests cover API auth,
+Non-billable local checks use synthetic fixtures and retained aggregate metadata only.24tests cover API auth,
 request validation and body limits, configuration routing, no response cache,
 persistent quota, concurrency rejection, sanitized errors, citation metadata/excerpt
 allowlists, restricted passage withholding, path/hash validation, actual runtime
@@ -27,7 +27,7 @@ the quota stores timestamps only. Provider infrastructure logs require separate 
 | Streamlit starts without secrets | locally tested; explicit unavailable status |
 | Base model identity | exact pinned ID/revision verified |
 | D1000/D1500 checkpoint identity | preserved research receipts/hashes verified |
-| D500 | disabled; no verified checkpoint |
+| D500 | disabled; recovered seed adapters have21rows, notD500; separate historical aggregates imported |
 | Question entry/examples/config controls | local synthetic UI tests passed |
 | API routing/adapter disable and switch logic | synthetic tests passed |
 | Auth, limits, serial inference, quota | locally tested |
@@ -37,7 +37,8 @@ the quota stores timestamps only. Provider infrastructure logs require separate 
 | Modal GPU image build and adapter loading | not run; approval required |
 | Actual base/RAG/D1000/D1500 inference | not tested on proposed deployment |
 | Five real meeting scenarios | pending activation; never replaced by mocks |
-| Public Streamlit URL | not deployed/tested; manual authentication needed |
+| Public website preview | deployed on free GitHub Pages/Stlite and browser-tested; inference disabled |
+| Server-side Streamlit Community Cloud | manual sign-in needed; not deployed |
 | Paid service/billing activation | not performed |
 
 ## Known limits that must not be hidden

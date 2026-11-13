@@ -108,3 +108,37 @@ behind HTTPS with access logs disabled and the same auth/quota/deadline settings
 Never bake protected assets or tokens into a public image. Terminate the Pod after
 the meeting; stopped Pod storage can remain billable. Serverless would require a
 separate queue handler and protocol adaptation, not merely deploying this Dockerfile.
+
+## Resumed implementation — 13 November 2026
+
+A free, verified public browser Streamlit preview is now available; see
+[FRONTEND_PREVIEW.md](FRONTEND_PREVIEW.md). This removes the authentication blocker
+for **website review**, while the server-side production frontend still requires
+Streamlit Community Cloud sign-in. Public preview mode can never connect to Modal.
+
+Activation helper defaults to non-billable preparation:
+
+```bash
+python scripts/activate_modal.py
+python scripts/preflight.py --manifest /private-assets/serving-manifest.json
+```
+
+After actual explicit owner approval and provider budget checks, record permission
+in a private receipt (never create this automatically): owner_approved=true,
+app=insurance-slm-meeting-demo,gpu=L4,gross_usage_cap_usd<=2,
+provider_budget_verified=true,expires_at_epoch within the next2hours.
+This is a record of permission, not a substitute for obtaining it.
+
+```bash
+python scripts/activate_modal.py --activate --owner-approval-receipt /private-assets/owner-approval.json
+```
+
+Immediately after the meeting:
+
+```bash
+python scripts/shutdown_modal.py
+```
+
+The helper stops this app only and preserves research originals. Verify the provider
+console shows stopped containers. Model/index preparation and release review are
+still prerequisites; an approved budget does not waive missing runtime dependencies.

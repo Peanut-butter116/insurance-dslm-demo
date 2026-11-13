@@ -2,8 +2,11 @@
 
 Tech Mahindra Makers Lab | Policy-Grounded Question Answering
 
-**Status: implementation and non-billable tests prepared; live inference deployment
-pending owner approval, private asset staging and original embedding service.**
+**Website preview is live:** https://peanut-butter116.github.io/insurance-dslm-demo/
+
+**Real inference remains unavailable**, pending owner approval, private asset staging
+and recovery of the original embedding/index runtime. The public preview runs the
+same Streamlit interface in the browser with generation disabled.
 No recorded answers are used. No model service, paid GPU or billing has been activated.
 
 The public Streamlit frontend calls an authenticated private FastAPI backend.
@@ -41,3 +44,6 @@ Meeting sequence: [runbook](docs/DEMO_RUNBOOK.md).
 Cost/memory estimates: [hosting](docs/HOSTING.md).
 Private mount schema: [manifest](docs/PRIVATE_MANIFEST_SCHEMA.md).
 Safety and remaining acceptance gates: [audit](docs/ACCEPTANCE.md).
+
+Public preview details: [FRONTEND_PREVIEW.md](docs/FRONTEND_PREVIEW.md).
+Week1/D500 recovery: [WEEK1_RECOVERY.md](docs/WEEK1_RECOVERY.md).

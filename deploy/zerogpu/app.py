@@ -21,6 +21,7 @@ expires=float(os.environ['SMOKE_EXPIRES_AT'])
 if not time.time()<expires<=time.time()+1800:raise RuntimeError('Finite smoke expiry required')
 work=Path('/tmp')/'insurance-private-zerogpu'
 work.mkdir(mode=0o700,exist_ok=True)
+startup_phase='artifact_readback'
 try:
     with open(os.devnull,'w') as sink,contextlib.redirect_stdout(sink),contextlib.redirect_stderr(sink):
         download_private_hf_bundle(plan,os.environ['PRIVATE_BUNDLE_REVISION'],work/'bundle',token=token,api=api,download=hf_hub_download)
@@ -28,8 +29,15 @@ try:
         manifest.update(asset_root=str(work/'bundle/assets'),research_root=str(work/'bundle/research-code'),retrieval=None)
         # Does NOT enable remote answers or alter the bundle release flag.
         os.environ['ZEROGPU_STARTUP_APPROVED']='yes'
+        startup_phase='original_runtime_emulation_load'
         runtime=prepare_runtime(manifest,smoke_only=True)  # Eager load under emulation at startup.
-except Exception:
+except Exception as error:
+    import traceback
+    diagnostic={'schema':'private-zerogpu-startup/1','phase':startup_phase,
+        'error_type':type(error).__name__,
+        'frames':[{'function':f.name,'line':f.lineno} for f in traceback.extract_tb(error.__traceback__)[-8:]],
+        'gpu_requests':0,'raw_answers_returned':False}
+    print(json.dumps(diagnostic))
     raise RuntimeError('Private artifact or emulated model startup failed; no fallback') from None
 smoke=BoundedSmoke(runtime,work/'smoke.sqlite3',expires)
 

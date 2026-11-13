@@ -1,5 +1,5 @@
 """One shot per condition, across GPU worker forks. Receipt contains no answers."""
-import hashlib,json,sqlite3,time,secrets
+import hashlib,json,sqlite3,time,secrets,traceback
 from pathlib import Path
 from config.model_registry import BASE_REVISION,ADAPTERS
 QUESTION='What conditions apply to getting a courtesy car under this motor policy?'
@@ -59,7 +59,9 @@ class BoundedSmoke:
             passed=row['screened_output_released'] and row['final_answer_present']
             row['status']='passed' if passed else 'failed'
         except Exception as e:
-            row={'condition':condition,'status':'failed','error_type':type(e).__name__,'raw_answers_returned':False}
+            row={'condition':condition,'status':'failed','error_type':type(e).__name__,
+                 'error_frames':[{'function':f.name,'line':f.lineno} for f in traceback.extract_tb(e.__traceback__)[-8:]],
+                 'raw_answers_returned':False}
         row['worker_seconds']=time.monotonic()-started
         with sqlite3.connect(self.journal) as db:
             db.execute('UPDATE cases SET status=?,receipt=? WHERE condition=?',(row['status'],json.dumps(row),condition))

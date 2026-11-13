@@ -4,7 +4,7 @@ from streamlit.testing.v1 import AppTest
 
 def test_preview_bundle_is_public_allowlist(tmp_path):
     files=build(tmp_path)
-    assert set(files)=={'app.py','config/__init__.py','config/model_registry.py','example_questions.py'}
+    assert set(files)=={'app.py','config/__init__.py','config/model_registry.py','config/historical_results.py','example_questions.py'}
     assert "os.environ['PUBLIC_PREVIEW'] = '1'" in files['app.py']
     assert not any('backend/' in name or 'client/' in name for name in files)
 

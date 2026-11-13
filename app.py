@@ -1,9 +1,10 @@
-"""Public Streamlit frontend: every generation goes to the authenticated backend."""
+# Public Streamlit frontend: every generation goes to the authenticated backend.
 import os
 import hmac
 import streamlit as st
 from config.model_registry import BASE_MODEL, BASE_REVISION, ADAPTERS
 from example_questions import EXAMPLES
+from config.historical_results import D500_STATUS, EARLY_SEED_RESULTS
 
 st.set_page_config(page_title='UK Motor Insurance — SLM Research Demo', layout='centered')
 st.title('UK Motor Insurance — Small Language Model Research Demo')
@@ -111,3 +112,17 @@ if record:
         with st.expander('Generation details'):
             st.json({k: record.get(k) for k in ('model_id', 'revision', 'checkpoint', 'sft', 'dataset_version',
                 'training_rows', 'rag', 'retrieval_status', 'latency_seconds', 'serving_status', 'output_complete')})
+
+with st.expander('Historical early research — not live D500 inference'):
+    st.write(D500_STATUS['reason'])
+    st.caption('These saved aggregate metrics belong to a 21-row seed SFT run on a 140-question mixed-insurance benchmark. They are not D500 results and are not directly comparable to the later 76-question motor evaluation. No predictions are replayed here.')
+    st.table([{
+        'Condition': r['condition'], 'Actual SFT rows': r['actual_training_rows'],
+        'Questions': r['benchmark_questions'],
+        'Citation resolution': f"{r['resolved_citations']}/{r['citation_occurrences']}",
+        'Balanced abstention': f"{100*r['balanced_abstention']:.2f}%",
+        'Correct refusals': f"{r['correct_refusals']}/{r['unanswerable_questions']}",
+        'Over-refusals': f"{r['over_refusals']}/{r['answerable_questions']}",
+        'Parse': f"{r['parsed_answers']}/{r['benchmark_questions']}",
+    } for r in EARLY_SEED_RESULTS])
+    st.caption('Answer correctness and semantic citation support are not imported: the inspected deterministic reports do not establish those scores. Resolution is metadata matching; parse means refusal or recognized citation, not JSON validity.')

@@ -2,7 +2,7 @@
 from pathlib import Path
 import json
 ROOT = Path(__file__).resolve().parents[1]
-FILES = ['app.py', 'config/__init__.py', 'config/model_registry.py', 'example_questions.py']
+FILES = ['app.py', 'config/__init__.py', 'config/model_registry.py', 'config/historical_results.py', 'example_questions.py']
 
 def build(output=None):
     target = Path(output) if output else ROOT/'docs/preview'

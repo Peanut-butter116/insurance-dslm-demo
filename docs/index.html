@@ -9,7 +9,7 @@
 <script type="module">
 try {
  const {mount} = await import('https://cdn.jsdelivr.net/npm/@stlite/browser@0.85.1/build/stlite.js');
- const response = await fetch('./preview/files.json');
+ const response = await fetch('./preview/files.json', {cache:'no-store'});
  if (!response.ok) throw new Error('Preview files unavailable');
  const files = await response.json();
  mount({entrypoint:'app.py', files, streamlitConfig:{'theme.base':'light','theme.primaryColor':'#2456A6','theme.backgroundColor':'#FFFFFF','theme.secondaryBackgroundColor':'#F4F6F8','client.toolbarMode':'viewer','browser.gatherUsageStats':false}}, document.getElementById('root'));

@@ -15,6 +15,7 @@ def build(destination):
         target.write_bytes(source.read_bytes())
     (destination/'app.py').write_bytes((ROOT/'deploy/zerogpu/app.py').read_bytes())
     (destination/'requirements.txt').write_bytes((ROOT/'deploy/zerogpu/requirements.txt').read_bytes())
+    (destination/'constraints.txt').write_bytes((ROOT/'deploy/zerogpu/constraints.txt').read_bytes())
     (destination/'README.md').write_text('---\ntitle: Private insurance SLM compatibility test\nsdk: gradio\nsdk_version: 6.32.0\npython_version: 3.12.12\napp_file: app.py\n---\n\nPrepared source only. Create nothing without owner approval. Private visibility and ZeroGPU hardware must be verified in the platform settings. Generated answer text remains disabled.\n')
     inventory={str(p.relative_to(destination)):hashlib.sha256(p.read_bytes()).hexdigest() for p in destination.rglob('*') if p.is_file()}
     (destination/'source_inventory.json').write_text(json.dumps(inventory,indent=2))

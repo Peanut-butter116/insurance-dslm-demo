@@ -27,12 +27,19 @@ def load_original_nf4(core, key):
     return model,tokenizer
 
 
+def require_original_torch_build(torch):
+    if str(torch.__version__)!='2.11.0+cu128' or torch.version.cuda!='12.8':
+        raise RuntimeError('Original torch2.11.0 CUDA12.8 build required; no silent replacement')
+
+
 def prepare_runtime(manifest, *, smoke_only=True):
     if os.environ.get('ZEROGPU_STARTUP_APPROVED')!='yes' or os.environ.get('SPACES_ZERO_GPU')!='1':
         raise RuntimeError('Approved private ZeroGPU startup required')
     if 'torch' in sys.modules and 'spaces' not in sys.modules:
         raise RuntimeError('Import spaces before torch; no CPU or paid fallback')
     import spaces  # Must precede ResearchRuntime/PEFT/transformers/torch imports.
+    import torch
+    require_original_torch_build(torch)
     from backend.runtime import ResearchRuntime
     if manifest.get('retrieval') is not None:raise ValueError('RAG must remain disabled')
     return ResearchRuntime(manifest,private_test=smoke_only,model_loader=load_original_nf4)

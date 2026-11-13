@@ -205,3 +205,15 @@ def test_hf_permission_schema_ignores_empty_owner_context_but_rejects_owner_gran
     with pytest.raises(ValueError):verify_scoped_token(api,'synthetic',namespace='synthetic-owner',repositories=[repo],write=False)
     fine['scoped'][1]['permissions']=['repo.write']
     with pytest.raises(ValueError):verify_scoped_token(api,'synthetic',namespace='synthetic-owner',repositories=[repo],write=True)
+
+def test_platform_pin_syntax_preserves_exact_cuda_build():
+    from backend.zerogpu_runtime import require_original_torch_build
+    from packaging.specifiers import SpecifierSet
+    from pathlib import Path
+    assert SpecifierSet('==2.11.0').contains('2.11.0+cu128')
+    pins=(Path(__file__).parents[1]/'deploy/zerogpu/requirements.txt').read_text()
+    constraints=(Path(__file__).parents[1]/'deploy/zerogpu/constraints.txt').read_text()
+    assert '\ntorch==2.11.0\n' in pins and '-c constraints.txt' in pins
+    assert 'torch==2.11.0+cu128' in constraints
+    require_original_torch_build(SimpleNamespace(__version__='2.11.0+cu128',version=SimpleNamespace(cuda='12.8')))
+    with pytest.raises(RuntimeError):require_original_torch_build(SimpleNamespace(__version__='2.11.0+cu130',version=SimpleNamespace(cuda='13.0')))

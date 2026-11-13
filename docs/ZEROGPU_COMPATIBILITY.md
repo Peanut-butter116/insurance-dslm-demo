@@ -221,3 +221,23 @@ and implicit selected-repository access is `repo.access.read`. The validator now
 ignores only empty entries, checks every active entity against the exact approved
 repository set, and rejects active namespace/global grants. No permissions were
 changed or broadened to resolve the false-positive preflight.
+
+## First approved deployment result and unapplied correction
+
+The private bundle transfer and independent immutable-HF readback passed, including
+all23 inventoried files. The subsequent first Space source publication was rejected
+at CONFIG_ERROR before image/model startup or any GPU request. The exact platform
+message said the torch version in requirements was incompatible, while listing2.11.0
+as supported; the declared original pin was `torch==2.11.0+cu128`.
+
+The smoke was disarmed; no GPU call, prediction or quota consumption occurred.
+No retry was made. The configured Space remains private and blocked, not a live demo.
+
+Prepared ONLY in this branch, not redeployed: declare the supported base version
+`torch==2.11.0`, retain the exact `2.11.0+cu128` wheel through a pip constraint and
+CUDA12.8 index, and reject any changed Torch/CUDA build at runtime before loading.
+PEP440 compatibility of that base specifier with the original local build is tested.
+Platform parsing of the revised packaging and actual CUDA emulation are NOT verified.
+This changes pin syntax, not model revision, quantisation, prompts or adapters.
+Another deployment attempt requires owner go-ahead under the explicit stop/no-retry
+instruction. The existing private artifact revision and all research outputs persist.

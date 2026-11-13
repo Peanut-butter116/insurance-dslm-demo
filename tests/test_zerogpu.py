@@ -105,6 +105,8 @@ def test_staged_source_is_code_only_and_decorator_is_direct(tmp_path):
     code=(tmp_path/'source/app.py').read_text()
     assert 'ZEROGPU_SMOKE_APPROVED' in code and 'share=False' in code
     assert '@spaces.GPU(duration=DURATION_SECONDS' in code
+    pins=(tmp_path/'source/requirements.txt').read_text()
+    assert 'torchvision==0.26.0+cu128' in pins and 'torchaudio==2.11.0+cu128' in pins
     marked=[]
     def decorator(fn):marked.append(fn);fn.synthetic_gpu_marker=True;return fn
     ui=create_ui(MeetingController(),gpu_decorator=decorator)

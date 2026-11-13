@@ -2,7 +2,6 @@
 import os
 import hmac
 import streamlit as st
-from client.inference_client import InferenceClient
 from config.model_registry import BASE_MODEL, BASE_REVISION, ADAPTERS
 from example_questions import EXAMPLES
 
@@ -17,25 +16,34 @@ def setting(name):
     except FileNotFoundError:
         return os.environ.get(name, '')
 
-access_code = setting('DEMO_ACCESS_CODE')
-if not access_code:
-    st.warning('Temporarily unavailable — the demonstrator must configure meeting access.')
-    st.stop()
-entered = st.text_input('Meeting access code', type='password')
-if not hmac.compare_digest(entered, access_code):
-    st.info('Enter the meeting access code to connect to live inference.')
-    st.stop()
-client = InferenceClient(setting('INFERENCE_API_URL'), setting('INFERENCE_API_TOKEN'),
-    setting('MODAL_PROXY_KEY'), setting('MODAL_PROXY_SECRET'))
-health = client.health()
-status = client.configurations() if not health.get('error') else {}
+preview = os.environ.get('PUBLIC_PREVIEW') == '1'
+access_code = '' if preview else setting('DEMO_ACCESS_CODE')
+backend_url = '' if preview else setting('INFERENCE_API_URL')
+backend_token = '' if preview else setting('INFERENCE_API_TOKEN')
+entered = ''
+if backend_url and backend_token and access_code and not preview:
+    entered = st.text_input('Meeting access code', type='password')
+connected = bool(backend_url and backend_token and access_code and hmac.compare_digest(entered, access_code))
+client = None
+health, status = {}, {}
+if connected:
+    from client.inference_client import InferenceClient
+    client = InferenceClient(backend_url, backend_token, setting('MODAL_PROXY_KEY'), setting('MODAL_PROXY_SECRET'))
+    if st.button('Connect / refresh model service'):
+        st.session_state['runtime_health'] = client.health()
+        st.session_state['runtime_configs'] = client.configurations() if not st.session_state['runtime_health'].get('error') else {}
+    health = st.session_state.get('runtime_health', {})
+    status = st.session_state.get('runtime_configs', {})
 configs = status.get('configurations', [])
 ready_keys = {c['key'] for c in configs if c.get('available')}
-ready = health.get('status') == 'ready'
+ready = connected and health.get('status') == 'ready'
 if ready:
     st.success('Live inference available · capped meeting demonstration')
 else:
-    st.warning('Temporarily unavailable — no live model backend is currently ready. No saved answers are substituted.')
+    st.warning('Inference temporarily unavailable — GPU backend not activated or connected.')
+    st.caption('Review the real interface below. Generation is disabled; no saved or simulated answers are shown.')
+if preview:
+    st.info('Public website preview · runs in your browser · no model, backend credentials or policy data are loaded.')
 
 with st.sidebar:
     st.header('Model configuration')

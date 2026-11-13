@@ -171,3 +171,10 @@ unsupported example if quota permits. Do not promise D1500 improves the answer o
 that refusal always occurs. Every click is a new generation; this is not evaluation.
 Stop after the meeting and verify the GPU session is terminal. If unavailable,
 show the existing interface preview labelled unavailable; do not replay predictions.
+
+## Follow-up compatibility preparation
+
+The identified integer-device placement issue now has a symbolic CUDA loader hook,
+source-only Space package and aggregate-only bounded-test template. See
+[ZEROGPU_COMPATIBILITY.md](ZEROGPU_COMPATIBILITY.md) for current evidence and gates;
+real CUDA emulation and GPU generation remain untested. No route is activated.

@@ -27,7 +27,7 @@ CSS='''
 footer {display:none!important}
 '''
 
-def create_ui(controller):
+def create_ui(controller, *, gpu_decorator=None):
     with gr.Blocks(title='UK Motor Insurance — Small Language Model Research Demo',analytics_enabled=False) as demo:
         gr.Markdown('# UK Motor Insurance — Small Language Model Research Demo\nTech Mahindra Makers Lab | Policy-Grounded Question Answering',elem_id='heading')
         gr.Markdown('Supervised meeting access. Do not enter personal details. Outputs are screened; screening cannot guarantee absence of restricted wording.')
@@ -56,6 +56,8 @@ def create_ui(controller):
             return (r['status'],r.get('answer',''),r.get('checkpoint',''),
                     'Refused' if refused is True else 'Not refused' if refused is False else 'Not measured',
                     r.get('latency_seconds'),{'condition':r.get('condition'),'actual_selection':r.get('selection'),'gpu_bytes':r.get('gpu')})
+        if gpu_decorator is not None:
+            generate=gpu_decorator(generate)
         button.click(generate,[question,condition],[status,answer,checkpoint,refusal,latency,details],
                      api_name=None,api_visibility="private",concurrency_limit=1,concurrency_id='shared-model')
     demo.queue(max_size=2,default_concurrency_limit=1)

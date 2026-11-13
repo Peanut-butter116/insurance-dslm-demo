@@ -58,3 +58,6 @@ The public preview stays unchanged and has no live model connection.
 Single-page Gradio preparation and route assessment: [SINGLE_PAGE_DEMO.md](docs/SINGLE_PAGE_DEMO.md).
 The authenticated loopback page is reviewable without a GPU; no share tunnel or
 ZeroGPU deployment has been activated. Remote generated-answer release remains blocked.
+
+ZeroGPU compatibility, private delivery and bounded-test preparation: [ZEROGPU_COMPATIBILITY.md](docs/ZEROGPU_COMPATIBILITY.md).
+Remote answer review remains closed: [ZEROGPU_OUTPUT_REVIEW.md](docs/ZEROGPU_OUTPUT_REVIEW.md).

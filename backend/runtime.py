@@ -41,7 +41,7 @@ class ResearchRuntime:
         manifest = json.loads(Path(os.environ['PRIVATE_SERVING_MANIFEST']).read_text())
         return cls(manifest)
 
-    def __init__(self, manifest, *, private_test=False):
+    def __init__(self, manifest, *, private_test=False, model_loader=None):
         self.manifest = manifest
         if not private_test and manifest.get('public_generation_approved') is not True:
             raise ValueError('Public generation release review required')
@@ -135,7 +135,8 @@ class ResearchRuntime:
         self.release = PublicRelease(all_chunks, manifest.get('public_display_chunk_ids'), manifest.get('public_metadata_chunk_ids'))
         self.release.resolver = core.rag.verify_citations
         from peft import PeftModel, prepare_model_for_kbit_training
-        self.model, self.tokenizer = core.load_model('ministral3b')
+        self.model, self.tokenizer = (model_loader(core, 'ministral3b') if model_loader is not None
+                                      else core.load_model('ministral3b'))
         if hashlib.sha256(str(self.tokenizer.chat_template).encode()).hexdigest() != 'a81fa42ad89f88c79d32f8f52c1cc7b1abfce90774437022e1cb22ce741ae86b':
             raise ValueError('Original tokenizer chat template differs')
         from transformers import AutoTokenizer
